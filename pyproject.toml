@@ -1,0 +1,64 @@
+[project]
+name = "refassist"
+version = "0.1.0"
+description = "Technical documentation helper powered by the Perplexity AI API"
+requires-python = ">=3.12.8"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Torin Rozzelle", email = "hello@torinrozzelle.com" },
+]
+readme = { file = "README.md", content-type = "text/markdown" }
+
+packages = [
+  "src/refassist"
+]
+dependencies = [
+    "loguru>=0.7.3",
+    "openai>=1.59.9",
+    "python-dotenv>=1.0.1",
+    "rich>=13.9.4",
+    "typer>=0.15.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.3",
+  "pytest-cov>=5.0.0",
+  "mypy>=1.14.1",
+  "bandit>=1.8.0",
+  "docformatter>=1.7.5",
+  "ruff>=0.8.6",
+]
+
+[tool.pytest.ini_options]
+addopts = "-vvv"
+testpaths = "tests"
+
+[tool.ruff]
+extend-exclude = [
+    "__pycache__",
+    "build",
+    "dist",
+]
+target-version = "py312"
+line-length = 90
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+files = ["src", "tests"]
+strict = "true"
