@@ -15,7 +15,6 @@ from refassist.log import logger
 
 config = dotenv_values(Path(__file__).parent.parent.with_name(".env"))
 
-# app = typer.Typer()
 console = Console()
 
 
@@ -56,7 +55,6 @@ async def interactive_mode(query_handler: QueryHandler):
             rprint("\n[bold red]An error occurred. Please try again.[/]")
 
 
-# @app.command()
 def main(
     file: Annotated[str, typer.Option(help="Path to a file or directory.")] = "",
     api_key: Annotated[str, typer.Option(help="Your Perplexity AI API key.")] = "",
