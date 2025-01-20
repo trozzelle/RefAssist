@@ -1,8 +1,8 @@
-from typing import List, Optional, Dict
+from typing import List, Dict
 import asyncio
 from refassist.models import QueryResult, Document
 from refassist.client import PerplexityClient
-from refassist.logging import logger
+from refassist.log import logger
 
 
 class QueryHandler:
@@ -38,7 +38,7 @@ class QueryHandler:
             context = "\n\n".join(doc.content for doc in self.documents)
 
             if code_examples:
-                qyery = f"Please provide code examples for {query}"
+                query = f"Please provide code examples for {query}"
 
             response = await self.client.query_document(query=query, context=context)
 

@@ -1,19 +1,21 @@
-from dotenv import dotenv_values
 import asyncio
 import typer
-from typing import Optional
-from pathlib import Path
+from typing_extensions import Annotated
 import os
+from pathlib import Path
 from rich.console import Console
 from rich.prompt import Prompt
 from rich import print as rprint
+from dotenv import dotenv_values
 
 from refassist.client import PerplexityClient
 from refassist.loader import DocumentLoader
 from refassist.query import QueryHandler
-from refassist.logging import logger
+from refassist.log import logger
 
-app = typer.Typer()
+config = dotenv_values(Path(__file__).parent.parent.with_name(".env"))
+
+# app = typer.Typer()
 console = Console()
 
 
@@ -54,19 +56,22 @@ async def interactive_mode(query_handler: QueryHandler):
             rprint("\n[bold red]An error occurred. Please try again.[/]")
 
 
-@app.command()
+# @app.command()
 def main(
-    documents_path: str = typer.Argument(..., help="Path to a document or directory"),
-    api_key: str = typer.Argument(..., help="API key"),
+    file: Annotated[str, typer.Option(help="Path to a file or directory.")] = "",
+    api_key: Annotated[str, typer.Option(help="Your Perplexity AI API key.")] = "",
 ) -> None:
-    api_key = api_key or os.getenv("PERPLEXITY_API_KEY")
+    api_key = api_key or os.getenv("PERPLEXITY_API_KEY") or config["PERPLEXITY_API_KEY"]
 
     if not api_key:
         raise typer.BadParameter("API key is required")
 
+    if not file:
+        raise typer.BadParameter("File or directory is required")
+
     try:
         with console.status("[bold green]Loading documentation...[/]"):
-            documents = DocumentLoader.load_documentation(documents_path)
+            documents = DocumentLoader.load_documentation(path=file)
 
         rprint(f"\n[bold green]Loaded {len(documents)} documents.[/]")
 
@@ -84,4 +89,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)

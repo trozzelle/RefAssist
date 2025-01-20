@@ -1,13 +1,14 @@
-from typing import List, Dict, Union, Optional
+from typing import List, Union
 from pathlib import Path
-from refassist.logging import logger
+from refassist.log import logger
 from refassist.models import Document
 
 
 class DocumentLoader:
     SUPPORTED_EXTENSIONS = {".md", ".txt", ".rst"}
 
-    def load_documentation(self, path: Union[str, Path]) -> List[Document]:
+    @staticmethod
+    def load_documentation(path: Union[str, Path]) -> List[Document]:
         path = Path(path)
 
         if not path.exists():
@@ -17,14 +18,14 @@ class DocumentLoader:
         documents: List[Document] = []
 
         if path.is_file():
-            if path.suffix in self.SUPPORTED_EXTENSIONS:
-                documents.append(self._load_file(path))
+            if path.suffix in DocumentLoader.SUPPORTED_EXTENSIONS:
+                documents.append(DocumentLoader._load_file(path))
             else:
                 raise ValueError(f"File {path} is not supported")
         elif path.is_dir():
             for file_path in path.rglob("*"):
-                if file_path.suffix in self.SUPPORTED_EXTENSIONS:
-                    documents.append(self._load_file(file_path))
+                if file_path.suffix in DocumentLoader.SUPPORTED_EXTENSIONS:
+                    documents.append(DocumentLoader._load_file(file_path))
 
         if not documents:
             raise ValueError(f"No supported files found in {path}")

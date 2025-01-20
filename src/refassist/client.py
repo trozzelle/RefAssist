@@ -2,7 +2,7 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
 from refassist.models.PerplexityResponse import PerplexityResponse
-from refassist.logging import logger
+from refassist.log import logger
 
 
 class PerplexityClient:
@@ -36,11 +36,13 @@ class PerplexityClient:
             )
 
             return PerplexityResponse(
-                content=response.choices[0].message.capitalize(),
-                citations=response.citations if hasattr(response, "citations") else [],
+                content=response.choices[0].message.content,
+                citations=response.model_extra.citations
+                if hasattr(response.model_extra, "citations")
+                else [],
                 usage=response.usage.model_dump(),
             )
 
         except Exception as e:
-            logging.error(f"Perplexity query failed: {str(e)}")
+            logger.error(f"Perplexity query failed: {str(e)}")
             raise
