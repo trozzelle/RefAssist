@@ -9,7 +9,7 @@ class PerplexityClient:
     def __init__(self, api_key: str) -> None:
         self.client = OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
 
-        self.model = "llama-3.1-sonar-small-128k-online"
+        self.model = "sonar-pro"
 
     async def query_document(
         self, query: str, context: str, temperature: float = 0.2
