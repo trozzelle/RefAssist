@@ -28,6 +28,9 @@ async def interactive_mode(query_handler: QueryHandler):
         if query.lower() in ("exit", "quit"):
             break
 
+        if query_handler.store_docs:
+            await query_handler.initialize()
+
         code_example = "code" in query.lower() or "example" in query.lower()
 
         try:
@@ -58,6 +61,23 @@ async def interactive_mode(query_handler: QueryHandler):
 def main(
     file: Annotated[str, typer.Option(help="Path to a file or directory.")] = "",
     api_key: Annotated[str, typer.Option(help="Your Perplexity AI API key.")] = "",
+    store_files: Annotated[
+        bool,
+        typer.Option(
+            "--store-files/--no-store-files",
+            help="Whether to process and store your files for RAG.",
+        ),
+    ] = False,
+    in_memory: Annotated[
+        bool,
+        typer.Option(
+            "--in-memory/--no-in-memory",
+            help="Whether to use an ephemeral, in-memory db instance.",
+        ),
+    ] = False,
+    db_path: Annotated[
+        str, typer.Option("--db-path", help="Where to store the db file.")
+    ] = None,
 ) -> None:
     api_key = api_key or os.getenv("PERPLEXITY_API_KEY") or config["PERPLEXITY_API_KEY"]
 
@@ -71,10 +91,24 @@ def main(
         with console.status("[bold green]Loading documentation...[/]"):
             documents = DocumentLoader.load_documentation(path=file)
 
-        rprint(f"\n[bold green]Loaded {len(documents)} documents.[/]")
+        rprint(f"\n[bold green]Retrieved {len(documents)} documents.[/]")
 
         client = PerplexityClient(api_key)
-        query_handler = QueryHandler(client, documents)
+
+        no_rag = not any([store_files, in_memory, db_path])
+
+        if no_rag:
+            query_handler = QueryHandler(
+                client=client, documents=documents, store_docs=False
+            )
+        else:
+            query_handler = QueryHandler(
+                client=client,
+                documents=documents,
+                db_path=db_path,
+                in_memory=in_memory,
+                store_docs=store_files,
+            )
 
         rprint("\n[bold]Welcome to the Documentation Assistant![/bold]")
         rprint("Ask questions about the documentation or type 'exit' to quit.")
