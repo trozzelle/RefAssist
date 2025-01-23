@@ -12,14 +12,18 @@ class QueryHandler:
         client: PerplexityClient,
         documents: List[Document],
         db_path: Optional[str] = None,
+        in_memory: bool = True,
+        store_docs: bool = False,
     ) -> None:
         self.client = client
         self.documents = documents
         self.rag_service = RAGService(db_path)
+        self.in_memory = in_memory
+        self.store_docs = store_docs
 
     async def initialize(self, documents_path: str) -> None:
         try:
-            self.rag_service.initialize(documents_path)
+            self.rag_service.initialize(documents_path, in_memory=self.in_memory)
         except Exception as e:
             logger.error(f"Failed to initialize rag service: {e}")
             raise
@@ -48,9 +52,13 @@ class QueryHandler:
         self, query: str, *, code_examples: bool = False
     ) -> QueryResult:
         try:
-            rag_results = self.rag_service.query(query)
-
-            context = "\n\n".join(result["text"] for result in rag_results)
+            if self.store_docs:
+                # RAG mode
+                rag_results = self.rag_service.query(query)
+                context = "\n\n".join(result["text"] for result in rag_results)
+            else:
+                # Basic mode - use all documents as context
+                context = "\n\n".join(doc.content for doc in self.documents)
 
             if code_examples:
                 query = f"Please provide code examples for {query}"

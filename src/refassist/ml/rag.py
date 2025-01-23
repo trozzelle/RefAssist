@@ -8,6 +8,9 @@ from refassist.log import logger
 
 class RAGService:
     def __init__(self, db_path: Optional[str] = None):
+        if not db_path:
+            # Figure out a better place for this
+            db_path = Path(__file__).parent / "app.db"
         self.vector_db = VectorDB(db_path)
 
     def initialize(self, documents_path: str, in_memory: bool = False) -> None:
@@ -20,8 +23,14 @@ class RAGService:
             documents = self._load_documents(documents_path)
 
             # Process documents and create embeddings
-            self.vector_db.process_documents(documents)
-            self.vector_db.create_embeddings()
+            # Split to save on processing if we're just
+            # doing it in memory
+            if in_memory:
+                self.vector_db.process_documents_memory(documents)
+                self.vector_db.close()
+            else:
+                self.vector_db.process_documents(documents)
+                self.vector_db.create_embeddings()
 
         except Exception as e:
             logger.error(f"Failed to initialize RAG service: {e}")
