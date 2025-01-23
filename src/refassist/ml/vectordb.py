@@ -28,6 +28,7 @@ class VectorDB:
             self.device = "mps"  # Apple Silicon / MLX
 
     def connect(self, in_memory: bool = False) -> None:
+        """Connect to DuckDB instance"""
         try:
             if self.db_path is None or in_memory:
                 self.conn = duckdb.connect(":memory:")
@@ -41,11 +42,13 @@ class VectorDB:
             raise
 
     def close(self) -> None:
+        """Close connection to DuckDB instance"""
         if self.conn:
             self.conn.close()
             self.conn = None
 
     def _load_extension(self) -> None:
+        """Load an extension into the DuckDB instance"""
         if not self.conn:
             raise RuntimeError("Database connection not established")
 
@@ -58,6 +61,7 @@ class VectorDB:
             raise
 
     def _initialize_schema(self) -> None:
+        """Initialize the RAG schema"""
         if not self.conn:
             raise RuntimeError("Database connection not established")
 
@@ -95,6 +99,7 @@ class VectorDB:
             raise
 
     def _setup_embedding_model(self) -> HuggingFaceEmbedding:
+        """Set up vector embedding model"""
         return HuggingFaceEmbedding(
             model_name=MODEL_NAME,
             device=self.device,
@@ -102,6 +107,7 @@ class VectorDB:
 
     @staticmethod
     def _setup_node_parser() -> SentenceSplitter:
+        """Set up tokenizer"""
         return SentenceSplitter(
             chunk_size=CHUNK_SIZE,
             chunk_overlap=CHUNK_OVERLAP,
@@ -110,6 +116,7 @@ class VectorDB:
         )
 
     def process_documents(self, documents: List[Document]) -> None:
+        """Process documents into chunks"""
         if not self.conn:
             raise RuntimeError("Database connection not established")
 
@@ -136,6 +143,7 @@ class VectorDB:
             raise
 
     def create_embeddings(self) -> None:
+        """Generate embeddings from chunked documents"""
         if not self.conn:
             raise RuntimeError("Database connection not established")
 
@@ -155,6 +163,7 @@ class VectorDB:
     def rag_query(
         self, query_text: str, top_k: int = 5, similarity_threshold: float = 0.0
     ) -> List[dict]:
+        """ "Embed the prompt and return vector similarity matches"""
         if not self.conn:
             raise RuntimeError("Database connection not established")
 
@@ -206,6 +215,7 @@ class VectorDB:
             raise
 
     def retrieve_rag_docs(self, doc_ids: List[str]) -> List[dict]:
+        """Retrieve original documents to include in LLM query"""
         if not self.conn:
             raise RuntimeError("Database connection not established")
 
